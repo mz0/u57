@@ -24,9 +24,15 @@ DEB_UPSTREAM_VERSION_MAJOR_MINOR := $(shell echo $(DEB_UPSTREAM_VERSION) | sed -
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 DISTRIBUTION := $(shell lsb_release -i -s)
 EXPORTED_SOURCE_TARBALL := debian/mysql-source-5.7.tar.gz
-TESTSUITE_FAIL_CMD:=true
 TMP := $(CURDIR)/debian/tmp/
 NUMJOBS=$(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+
+# Some tests will fail on platforms that are not tested by upstream
+ifneq (,$(filter $(ARCH), amd64 i386))
+    TESTSUITE_FAIL_CMD:=exit 1
+else
+    TESTSUITE_FAIL_CMD:=true
+endif
 
 ifeq (,$(NUMJOBS))
 	NUMJOBS=1
@@ -72,6 +78,7 @@ configure-stamp:
 		-DBUILD_CONFIG=mysql_release \
 		-DWITH_LIBWRAP=ON \
 		-DWITH_ZLIB=system \
+		-DWITH_LZ4=system \
 		-DWITH_EDITLINE=system \
 		-DWITH_LIBEVENT=system \
 		-DWITH_SSL=bundled \
@@ -122,7 +129,6 @@ build-stamp: $(EXPORTED_SOURCE_TARBALL)
 override_dh_auto_test:
 	@echo "RULES.$@"
 ifeq ($(findstring nocheck,$(DEB_BUILD_OPTIONS)),)
-	cp unittest/unit.pl $(builddir)/unittest/
 	cp -r mysql-test/* $(builddir)/mysql-test/
 	cp -r sql/share/* $(builddir)/sql/share/
 	cp -r scripts/*sql $(builddir)/scripts/
@@ -131,9 +137,14 @@ ifeq ($(ARCH_OS),hurd)
 	# http://bugs.mysql.com/bug.php?id=64685. Run unit tests only.
 	cd $(builddir) && $(MAKE) test || $(TESTSUITE_FAIL_CMD) ;
 else
+	touch $(builddir)/mysql-test/skiplist
+	# Tests that are known to be unstable on all platforms are skipped
+	# http://bugs.mysql.com/bug.php?id=83340
+	echo "main.xa_prepared_binlog_off	: unstable test" >> $(builddir)/mysql-test/skiplist
+
 	# Skip replication tests since they are timing sensitive and may
 	# result in false positives.
-	cd $(builddir)/mysql-test && ./mtr --parallel=$(NUMJOBS) --skip-rpl $(MTR_SUITE) || $(TESTSUITE_FAIL_CMD) ;
+	cd $(builddir)/mysql-test && ./mtr --parallel=$(NUMJOBS) --skip-rpl $(MTR_SUITE) --force --skip-test-list=./skiplist || $(TESTSUITE_FAIL_CMD) ;
 endif
 endif
 

@@ -16,6 +16,7 @@ Build-Depends: bison,
                libaio-dev[linux-any],
                libedit-dev,
                libevent-dev,
+               libjson-perl,
                liblz4-dev,
                libmecab-dev,
                libncurses5-dev (>= 5.0-6),
@@ -28,7 +29,7 @@ Build-Depends: bison,
                zlib1g-dev (>= 1:1.1.3-5)
 Standards-Version: 3.9.8
 Homepage: http://dev.mysql.com/
-Vcs-Git: https://anonscm.debian.org/pkg-mysql/mysql.git -b mysql-5.7/debian/master
+Vcs-Git: https://anonscm.debian.org/git/pkg-mysql/mysql.git -b mysql-5.7/debian/master
 Vcs-Browser: https://anonscm.debian.org/cgit/pkg-mysql/mysql.git
 XS-Testsuite: autopkgtest
 
@@ -210,7 +211,7 @@ Package: mysql-testsuite-5.7
 Architecture: any
 Depends: mysql-client-5.7 (= ${binary:Version}),
          mysql-server-5.7 (= ${binary:Version}),
-         python,
+         libjson-perl,
          ${misc:Depends},
          ${shlibs:Depends}
 Provides: virtual-mysql-testsuite
