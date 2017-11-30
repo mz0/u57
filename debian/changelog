@@ -1,3 +1,42 @@
+mysql-5.7 (5.7.20-1) unstable; urgency=high (security fixes)
+
+  [ Lars Tangvald ]
+  * Imported upstream version 5.7.20 to fix security issues:
+    - http://www.oracle.com/technetwork/security-advisory/cpuoct2017-3236626.html
+    - CVE-2017-3731 CVE-2017-10155 CVE-2017-10165 CVE-2017-10167
+    - CVE-2017-10227 CVE-2017-10268 CVE-2017-10276 CVE-2017-10279
+    - CVE-2017-10283 CVE-2017-10284 CVE-2017-10286 CVE-2017-10294
+    - CVE-2017-10296 CVE-2017-10311 CVE-2017-10313 CVE-2017-10314
+    - CVE-2017-10320 CVE-2017-10365 CVE-2017-10379 CVE-2017-10384
+    (Closes: ##878398)
+  * d/patches: Removed patch for failing test
+    (Fixed upstream: https://bugs.mysql.com/bug.php?id=83321)
+
+  [ Robie Basak ]
+  * Update translations (Closes: #856791, #863940, #871560, #845692)
+
+ -- Robie Basak <robie.basak@canonical.com>  Thu, 30 Nov 2017 12:31:24 +0000
+
+mysql-5.7 (5.7.19-1) unstable; urgency=high (security fixes)
+
+  * Imported upstream version 5.7.19 to fix security issues:
+    - http://www.oracle.com/technetwork/security-advisory/cpujul2017-3236622.html
+    - CVE-2017-3529 CVE-2017-3633 CVE-2017-3634 CVE-2017-3635
+    - CVE-2017-3637 CVE-2017-3638 CVE-2017-3639 CVE-2017-3640
+    - CVE-2017-3641 CVE-2017-3642 CVE-2017-3643 CVE-2017-3644
+    - CVE-2017-3645 CVE-2017-3646 CVE-2017-3647 CVE-2017-3648
+    - CVE-2017-3649 CVE-2017-3650 CVE-2017-3651 CVE-2017-3652
+    - CVE-2017-3653 CVE-2017-3732
+    (Closes: #868798)
+  * d/patches: Drop removedojo patch
+    The files deleted by the patch are removed from upstream's
+    source tarball
+  * d/tests: Add --report-unstable-tests to mtr run
+    The test suite will no longer fail if all failed tests
+    pass on retry
+
+ -- Lars Tangvald <lars.tangvald@oracle.com>  Thu, 20 Jul 2017 18:21:38 +0200
+
 mysql-5.7 (5.7.18-1) unstable; urgency=high (security fixes)
 
   [ Lars Tangvald ]
