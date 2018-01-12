@@ -12,6 +12,52 @@ export PATH=$PATH:/sbin:/usr/sbin:/bin:/usr/bin
 # This command can be used as pipe to syslog. With "-s" it also logs to stderr.
 ERR_LOGGER="logger -p daemon.err -t mysqld_safe -i"
 
+# Start the server with networking disabled and socket in a temporary location
+# Usage: start_server <datadir> <tmpdir> <skip_grant>
+# Params:
+# datadir - Location of database files
+# tmpdir - Used to store temporary pid and socket files
+# skip_grant - If set, the server will be started with --skip-grant-tables
+start_server() {
+  local datadir=$1
+  local tmpdir=$2
+  local skip_grant=$3
+  # If a database is already running, mysqld will keep trying to lock the files for ~100 seconds before failing.
+  # If the ibdata1 file is locked we fail immediately
+  if fuser "$datadir/ibdata1"; then
+    echo "ERROR: Database files are locked. Daemon already running?" >&2
+    return 1
+  fi
+  # The --daemonize flag makes the process fork, with the original exiting once the database is ready for use
+  if [ ! -z "$skip_grant" ]; then
+    mysqld --user=mysql --daemonize --socket="$tmpdir/mysqld.sock" --pid-file="$tmpdir/mysqld.pid" --skip-networking --skip-grant-tables
+  else
+    mysqld --user=mysql --daemonize --socket="$tmpdir/mysqld.sock" --pid-file="$tmpdir/mysqld.pid" --skip-networking
+  fi
+}
+
+# Shut down the server by sending a kill signal to the process
+# Usage: stop_server <tmpdir>
+# Params:
+# tmpdir - Location of temporary pid-file
+stop_server(){
+  local tmpdir=$1
+  # Send kill signal
+  server_pid=$(cat "$tmpdir/mysqld.pid")
+  kill "$server_pid"
+
+  for i in $(seq 1 60); do
+    sleep 0.1 # A full second is too long, but we need to give the server _some_ time.
+    if ! $(ps $server_pid >/dev/null 2>&1); then
+      return 0
+    fi
+    sleep 1
+  done
+  # The server hasn't shut down in a timely manner
+  echo "Error: Unable to shut down server with process id $server_pid" >&2
+  return 1
+}
+
 # Runs an arbitrary init sql file supplied in $1. Does not require login access
 run_init_sql() {
   tmpdir=`mktemp -d`
@@ -77,30 +123,15 @@ fix_old_config_options() {
 }
 
 # Check if there is passwordless root login
+# Usage: test_mysql_access <tmpdir>
+# Params:
+# tmpdir - Location of mysqld.sock file
 test_mysql_access() {
-  mysql --no-defaults -u root -h localhost </dev/null >/dev/null 2>&1
+  local tmpdir=$1
+  mysql --no-defaults -u root --socket="$tmpdir/mysqld.sock" </dev/null >/dev/null 2>&1
 }
 
-# Check if the debian-sys-maint user can log in
-test_sysmaint_access() {
-  mysql --defaults-file=/etc/mysql/debian.cnf </dev/null >/dev/null 2>&1
-}
-
-# $1 is username, e.g. 'root' $2 is password
-set_mysql_pw() {
-  # These variables are global (POSIX doesn't define local) so prefix them
-  # to avoid any potential collisions.
-  set_mysql_pw_user="$1"
-  set_mysql_pw_pass="$2"
-  set_mysql_pw_passfile=`mktemp --tmpdir=/var/lib/mysql-files/`
-  chown mysql:mysql "$set_mysql_pw_passfile"
-  echo "USE mysql;" >> "$set_mysql_pw_passfile"
-  echo "UPDATE user SET authentication_string=PASSWORD('$set_mysql_pw_pass') WHERE user='$set_mysql_pw_user';" >> "$set_mysql_pw_passfile"
-  echo "FLUSH PRIVILEGES;" >> "$set_mysql_pw_passfile"
-  echo "SHUTDOWN;" >> "$set_mysql_pw_passfile"
-  run_init_sql "$set_mysql_pw_passfile"
-  rm "$set_mysql_pw_passfile"
-}
+this_version=5.7
 
 # This is necessary because mysql_install_db removes the pid file in /var/run
 # and because changed configuration options should take effect immediately.
@@ -110,6 +141,23 @@ set +e; invoke stop; set -e
     
 case "$1" in
   configure)
+    # INSERT ANY VERSIONED UPGRADE PATH HANDLING HERE AND NO LATER
+
+    # Versioned upgrade path handling must be done before freeze mode detection;
+    # otherwise the following freeze mode handling may cause upgrade path
+    # handling to be skipped over multiple version upgrades, meaning that the
+    # upgrade path handling never runs on some systems where freeze mode
+    # remains active for a long period.
+
+    if [ -e /etc/mysql/FROZEN -o -h /etc/mysql/FROZEN ]; then
+      db_input critical mysql-server-$this_version/installation_freeze_mode_active || true
+      db_go
+      db_stop
+      echo "Packaging maintenance of MySQL will stop and the daemon disabled to prevent damage to your system." 1>&2
+      echo "For help, see /etc/mysql/FROZEN" 1>&2
+      exit 0
+    fi
+
     mysql_datadir=/usr/share/mysql
     mysql_statedir=/var/lib/mysql
     mysql_rundir=/var/run/mysqld
@@ -252,57 +300,69 @@ case "$1" in
   ;;
 esac
 
-# The debhelper section is needed to unmask and enable the service
-# in some cases like when upgrading from 5.5
-#DEBHELPER#
 
 if [ "$1" = "configure" ]; then
-  # We want to run mysql_upgrade to cover users upgrading. First we check if
-  # the debian-sys-maint user can log in. If not, we reset its password first.
+  # We want to run mysql_upgrade to cover users upgrading. Since
+  # mysql_upgrade is a client and we don't know the root credentials,
+  # we run the server in skip_grant mode to allow it access.
   if [ $existingdatabase = 1 ]; then
-    if ! test_sysmaint_access; then
-      invoke stop
-      set_mysql_pw "debian-sys-maint" "$pass"
-      invoke start
-    fi
-    # mysql_upgrade returns exit status 2 if the database is already upgraded
-    # (LP: #1566406) so ignore its exit status if it is 2.
+    # Generate a tmpdir to store socket and pid files
+    tmpdir=$(mktemp -d)
+    chown mysql:mysql "$tmpdir"
+    mysql_statedir=/var/lib/mysql
     result=0
-    mysql_upgrade --defaults-file=/etc/mysql/debian.cnf || result=$?
-    if [ $result -ne 0 -a $result -ne 2 ]; then
-      echo "mysql_upgrade failed with exit status $result" >&2
-      exit 1
+    start_server "$mysql_statedir" "$tmpdir" "skip_grant" || result=$?
+    # If the server fails to start, then skip the various client operations
+    if [ $result -ne 0 ]; then
+      echo "Warning: Unable to start the server. Please restart MySQL and run mysql_upgrade to ensure the database is ready for use." >&2
+    else
+      # mysql_upgrade returns exit status 2 if the database is already upgraded
+      # (LP: #1566406) so ignore its exit status if it is 2.
+      result=0
+      mysql_upgrade --no-defaults --socket="$tmpdir/mysqld.sock" || result=$?
+      if [ $result -ne 0 -a $result -ne 2 ]; then
+        echo "mysql_upgrade failed with exit status $result" >&2
+        stop_server "$tmpdir"
+        rm -rf "$tmpdir"
+        exit 1
+      fi
+      # Stop the server
+      stop_server "$tmpdir"
     fi
-    # Server should be restarted after running mysql_upgrade
-    invoke restart
+    rm -rf "$tmpdir"
   fi
   # Here we check to see if we can connect as root without a password
   # this should catch upgrades from previous versions where the root
   # password wasn't set.  If the connection succeeds we install the
   # auth_socket plugin and enable it for the root user to improve
   # security.
-  if test_mysql_access; then
+  tmpdir=$(mktemp -d)
+  chown mysql:mysql "$tmpdir"
+  mysql_statedir=/var/lib/mysql
+  result=0
+  start_server "$mysql_statedir" "$tmpdir" || result=$?
+  if [ $result -ne 0 ]; then
+    echo "Warning: Unable to start the server." >&2
+  elif test_mysql_access "$tmpdir"; then
     db_get mysql-server/root_password && rootpw="$RET"
     if [ ! -z "$rootpw" ]; then
+      stop_server "$tmpdir"
       rootpw=$(printf %q "${rootpw}")
-      invoke stop
       initfile=`mktemp --tmpdir=/var/lib/mysql-files/`
       chown mysql:mysql "$initfile"
       echo "ALTER USER 'root'@'localhost' IDENTIFIED WITH 'mysql_native_password' BY '$rootpw';" >> "$initfile"
       echo "SHUTDOWN;"                                                                           >> "$initfile"
-      invoke stop
       run_init_sql "$initfile"
       rm "$initfile"
-      invoke start
     else
       # Try to install auth_socket plugin. This throws an error if the plugin is
       # already installed, which would end execution of the init sql to stop if
       # --init-file was used. Bug: http://bugs.mysql.com/bug.php?id=80642
       pluginfile=`mktemp --tmpdir=/var/lib/mysql-files/`
       echo "INSTALL PLUGIN auth_socket SONAME 'auth_socket.so';" >> "$pluginfile"
-      mysql --no-defaults -uroot < "$pluginfile" > /dev/null 2>&1 || true
+      mysql --no-defaults --socket="$tmpdir/mysqld.sock" -uroot < "$pluginfile" > /dev/null 2>&1 || true
       rm "$pluginfile"
-      invoke stop
+      stop_server "$tmpdir"
       initfile=`mktemp --tmpdir=/var/lib/mysql-files/`
       chown mysql:mysql "$initfile"
       # If there is no root password set we enable the auth_socket plugin for the root user
@@ -312,9 +372,11 @@ if [ "$1" = "configure" ]; then
       # The INSTALL PLUGIN line will throw an error if the plugin is already installed
       run_init_sql "$initfile"
       rm "$initfile"
-      invoke start
     fi
+  else
+    stop_server "$tmpdir"
   fi
+  rm -rf "$tmpdir"
 fi
 
 # forget we ever saw the password.  don't use reset to keep the seen status
@@ -322,5 +384,6 @@ db_set mysql-server/root_password ""
 db_set mysql-server/root_password_again ""
 db_stop # in case invoke failes
 
+#DEBHELPER#
 
 exit 0
