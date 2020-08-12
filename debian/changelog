@@ -1,3 +1,11 @@
+mysql-5.7 (5.7.34-0ubuntu0.18.04.2) bionic; urgency=medium
+
+  * debian/mysql-server-5.7.postinst: don't run mysql_upgrade if in
+    (super) read-only mode.
+    (LP: #1889472)
+
+ -- Simon Deziel <simon@sdeziel.info>  Wed, 12 Aug 2020 19:17:09 +0000
+
 mysql-5.7 (5.7.34-0ubuntu0.18.04.1) bionic-security; urgency=medium
 
   * SECURITY UPDATE: Update to 5.7.34 to fix security issues
