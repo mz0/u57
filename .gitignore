@@ -1,0 +1,9 @@
+/mysql-boost-5.7.??.tar.gz
+/mysql-5.7_5.7.*_amd64.build
+/upstream.src/debian/*.debhelper.log
+/upstream.src/.pc/
+/upstream.src/build-stamp
+/upstream.src/builddir/
+/upstream.src/cmake/os/GNU.cmake
+/upstream.src/configure-stamp
+/upstream.src/debian/mysql-source-5.7.tar.gz

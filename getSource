@@ -1,0 +1,31 @@
+#!/bin/sh
+
+PVER=${1:-29}
+MAJ_MINOR=5.7
+FULLVER=$MAJ_MINOR.$PVER
+MIRROR=ftp.gwdg.de/pub/misc/mysql
+# www.mirrorservice.org/sites/ftp.mysql.com
+# mirror.yandex.ru/mirrors/ftp.mysql.com
+# ftp.iij.ad.jp/pub/db/mysql/Downloads - 2021.07.31 5.7.29 was found here
+# ftp.zut.edu.pl/mirrors/ftp.mysql.com - and here too
+ORIGIN="http://$MIRROR/Downloads/MySQL-$MAJ_MINOR"
+TARGZ="mysql-boost-$FULLVER.tar.gz"
+GPG_SIGNATURE=${TARGZ}.asc
+
+# TODO absolute directory from script dir
+TGTDIR=.
+DST_TARGZ=$TGTDIR/mysql-$MAJ_MINOR_$FULLVER.orig.tar.gz
+DST_ASC=$TGTDIR/mysql-$MAJ_MINOR_$FULLVER.orig.tar.gz.asc
+
+#gpg --keyserver keyserver.ubuntu.com --recv-keys A4A9406876FCBD3C456770C88C718D3B5072E1F5
+gpg --import mysql-build-pubkey-8C718D3B5072E1F5.asc
+
+CURL_PROGRESS_OPTION=--progress-bar # --no-progress-meter | --silent
+# beware of Mirror sites returning 200 OK and HTML "Service temporarily unavailable"
+curl -o $TGTDIR/$TARGZ.md5 --remote-time $CURL_PROGRESS_OPTION $ORIGIN/$TARGZ.md5 || echo "$TARGZ.md5 not downloaded"
+curl -o $TARGZ --remote-time $CURL_PROGRESS_OPTION $ORIGIN/$TARGZ || exit 1
+ln -s $TARGZ $DST_TARGZ
+curl -o $DST_ASC --remote-time $CURL_PROGRESS_OPTION $ORIGIN/$GPG_SIGNATURE || exit 1
+
+# last command $? is the script's $? anyway, but let's be explicit here
+gpg --verify $DST_ASC 2> /dev/null || exit 1

@@ -1,0 +1,21 @@
+#!/bin/sh
+
+for Pem in upstream.src/builddir/mysql-test/std_data/*.pem; do
+  clear
+  echo "Examining '$Pem'"
+  if grep -q 'BEGIN RSA PRIVATE KEY' $Pem ; then
+    openssl rsa -in $Pem -text
+  elif grep -q 'BEGIN PUBLIC KEY' $Pem ; then
+	openssl rsa -noout -text -inform PEM -in builddir/mysql-test/std_data/rsa_public_key.pem  -pubin
+  elif grep -q 'BEGIN CERTIFICATE' $Pem ; then
+    openssl x509 -in $Pem -text -noout
+  else
+    echo unknown file type: $(grep BEGIN $Pem)
+  fi
+  read -p "continue (y|N) " yn
+  if [ $yn = 'y' ] || [ $yn = 'Y' ]; then
+     continue
+  else
+     break
+  fi
+done
