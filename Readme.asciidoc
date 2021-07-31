@@ -1,0 +1,15 @@
+MySQL 5.7 builds for Ubuntu 20.04
+
+
+m572 hosts previous work in the mysql-5.7/ subdir, where 'focal' branch (TODO rename)
+set on commit 71b7a169772 2020-01-21 Author: marc.deslauriers@ubuntu.com
+Import patches-unapplied version 5.7.29-0ubuntu0.18.04.1 to ubuntu/bionic-security
+
+mkdir m57 && cd m57 && git init # + user, email, GPG
+
+git remote add -t focal-mz0 -t focal -m focal -f --no-tags prev-work file:///home/mz0/m572/mysql-5.7/.git
+Updating prev-work
+...
+Receiving objects: 100% (57744/57744), 84.72 MiB | 26.14 MiB/s, done.
+
+git remote add -f upstream git://git.launchpad.net/ubuntu/+source/mysql-5.7
