@@ -1,3 +1,10 @@
+mysql-5.7 (5.7.34-2) focal; urgency=medium
+
+  * Non-maintainer upload.
+  * rebuild for focal
+
+ -- Mark Zhitomirski <mz@exactpro.com>  Sun, 01 Aug 2021 12:36:00 +0300
+
 mysql-5.7 (5.7.34-0ubuntu0.18.04.2) bionic; urgency=medium
 
   * debian/mysql-server-5.7.postinst: don't run mysql_upgrade if in
