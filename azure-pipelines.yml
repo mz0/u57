@@ -14,6 +14,6 @@ steps:
     apt update && apt upgrade && apt install -y devscripts \
     bison chrpath cmake debhelper dh-apparmor libaio-dev libedit-dev libevent-dev \
     liblz4-dev libncurses5-dev libnuma-dev libssl-dev libwrap0-dev po-debconf \
-    zlib1g-dev dh-systemd && \
+    zlib1g-dev dh-systemd pkg-config psmisc && \
     cd upstream.src && debuild -j2 -b -uc -us
   displayName: 'Install build tools, deps, and try binary build'
