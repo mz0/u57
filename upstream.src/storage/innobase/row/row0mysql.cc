@@ -1,6 +1,6 @@
 /*****************************************************************************
 
-Copyright (c) 2000, 2019, Oracle and/or its affiliates. All Rights Reserved.
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License, version 2.0,
@@ -2132,10 +2132,17 @@ row_update_inplace_for_intrinsic(const upd_node_t* node)
 		index, offsets, node->update);
 
 	if (size_changes) {
+		mtr_commit(&mtr);
 		return(DB_FAIL);
 	}
 
 	row_upd_rec_in_place(rec, index, offsets, node->update, NULL);
+
+	/* Set the changed pages as modified, so that if the page is
+	evicted from the buffer pool it is flushed and we don't lose
+	the changes */
+
+	mtr.set_modified();
 
 	mtr_commit(&mtr);
 
@@ -3053,9 +3060,9 @@ row_create_table_for_mysql(
 		ib::error() << "Trying to create a MySQL system table "
 			<< table->name << " of type InnoDB. MySQL system"
 			" tables must be of the MyISAM type!";
-#ifndef DBUG_OFF
+#ifndef NDEBUG
 err_exit:
-#endif /* !DBUG_OFF */
+#endif /* !NDEBUG */
 		dict_mem_table_free(table);
 
 		if (commit) {

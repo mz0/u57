@@ -1,6 +1,6 @@
 /*****************************************************************************
 
-Copyright (c) 1995, 2019, Oracle and/or its affiliates. All Rights Reserved.
+Copyright (c) 1995, 2021, Oracle and/or its affiliates.
 Copyright (c) 2008, Google Inc.
 
 Portions of this file contain modifications contributed and copyrighted by
@@ -95,14 +95,16 @@ struct set_numa_interleave_t
 
 			ib::info() << "Setting NUMA memory policy to"
 				" MPOL_INTERLEAVE";
+			struct bitmask* numa_nodes = numa_get_mems_allowed();
 			if (set_mempolicy(MPOL_INTERLEAVE,
-					  numa_all_nodes_ptr->maskp,
-					  numa_all_nodes_ptr->size) != 0) {
+					  numa_nodes->maskp,
+					  numa_nodes->size) != 0) {
 
 				ib::warn() << "Failed to set NUMA memory"
 					" policy to MPOL_INTERLEAVE: "
 					<< strerror(errno);
 			}
+			numa_bitmask_free(numa_nodes);
 		}
 	}
 
@@ -331,14 +333,6 @@ buf_pool_t*	buf_pool_ptr;
 
 /** true when resizing buffer pool is in the critical path. */
 volatile bool	buf_pool_resizing;
-
-/** true when withdrawing buffer pool pages might cause page relocation */
-volatile bool	buf_pool_withdrawing;
-
-/** the clock is incremented every time a pointer to a page may become obsolete;
-if the withdrwa clock has not changed, the pointer is still valid in buffer
-pool. if changed, the pointer might not be in buffer pool any more. */
-volatile ulint	buf_withdraw_clock;
 
 /** Map of buffer pool chunks by its first frame address
 This is newly made by initialization of buffer pool and buf_resize_thread.
@@ -1520,16 +1514,18 @@ buf_chunk_init(
 
 #ifdef HAVE_LIBNUMA
 	if (srv_numa_interleave) {
+		struct 	bitmask* numa_nodes = numa_get_mems_allowed();
 		int	st = mbind(chunk->mem, chunk->mem_size(),
 				   MPOL_INTERLEAVE,
-				   numa_all_nodes_ptr->maskp,
-				   numa_all_nodes_ptr->size,
+				   numa_nodes->maskp,
+				   numa_nodes->size,
 				   MPOL_MF_MOVE);
 		if (st != 0) {
 			ib::warn() << "Failed to set NUMA memory policy of"
 				" buffer pool page frames to MPOL_INTERLEAVE"
 				" (error: " << strerror(errno) << ").";
 		}
+		numa_bitmask_free(numa_nodes);
 	}
 #endif /* HAVE_LIBNUMA */
 
@@ -1952,8 +1948,6 @@ buf_pool_init(
 	NUMA_MEMPOLICY_INTERLEAVE_IN_SCOPE;
 
 	buf_pool_resizing = false;
-	buf_pool_withdrawing = false;
-	buf_withdraw_clock = 0;
 
 	buf_pool_ptr = (buf_pool_t*) ut_zalloc_nokey(
 		n_instances * sizeof *buf_pool_ptr);
@@ -2013,7 +2007,6 @@ buf_page_realloc(
 {
 	buf_block_t*	new_block;
 
-	ut_ad(buf_pool_withdrawing);
 	ut_ad(buf_pool_mutex_own(buf_pool));
 	ut_ad(buf_block_get_state(block) == BUF_BLOCK_FILE_PAGE);
 
@@ -2435,7 +2428,6 @@ buf_pool_withdraw_blocks(
 		<< UT_LIST_GET_LEN(buf_pool->withdraw) << " blocks.";
 
 	/* retry is not needed */
-	++buf_withdraw_clock;
 	os_wmb;
 
 	return(false);
@@ -2521,7 +2513,7 @@ buf_pool_resize_hash(
 	buf_pool->zip_hash = new_hash_table;
 }
 
-#ifndef DBUG_OFF
+#ifndef NDEBUG
 /** This is a debug routine to inject an memory allocation failure error. */
 static
 void
@@ -2536,7 +2528,7 @@ buf_pool_resize_chunk_make_null(buf_chunk_t** new_chunks)
 
 	count++;
 }
-#endif // DBUG_OFF
+#endif // NDEBUG
 
 /** Resize the buffer pool based on srv_buf_pool_size from
 srv_buf_pool_old_size. */
@@ -2550,7 +2542,6 @@ buf_pool_resize()
 	NUMA_MEMPOLICY_INTERLEAVE_IN_SCOPE;
 
 	ut_ad(!buf_pool_resizing);
-	ut_ad(!buf_pool_withdrawing);
 	ut_ad(srv_buf_pool_chunk_unit > 0);
 
 	new_instance_size = srv_buf_pool_size / srv_buf_pool_instances;
@@ -2616,7 +2607,6 @@ buf_pool_resize()
 
 			ut_ad(buf_pool->withdraw_target == 0);
 			buf_pool->withdraw_target = withdraw_target;
-			buf_pool_withdrawing = true;
 		}
 	}
 
@@ -2641,7 +2631,6 @@ withdraw_retry:
 
 	if (srv_shutdown_state != SRV_SHUTDOWN_NONE) {
 		/* abort to resize for shutdown. */
-		buf_pool_withdrawing = false;
 		return;
 	}
 
@@ -2702,11 +2691,9 @@ withdraw_retry:
 		goto withdraw_retry;
 	}
 
-	buf_pool_withdrawing = false;
-
 	buf_resize_status("Latching whole of buffer pool.");
 
-#ifndef DBUG_OFF
+#ifndef NDEBUG
 	{
 		bool	should_wait = true;
 
@@ -2717,7 +2704,7 @@ withdraw_retry:
 				should_wait = true; os_thread_sleep(10000););
 		}
 	}
-#endif /* !DBUG_OFF */
+#endif /* !NDEBUG */
 
 	if (srv_shutdown_state != SRV_SHUTDOWN_NONE) {
 		return;
@@ -3909,17 +3896,8 @@ buf_block_from_ahi(const byte* ptr)
 	return(block);
 }
 
-/********************************************************************//**
-Find out if a pointer belongs to a buf_block_t. It can be a pointer to
-the buf_block_t itself or a member of it. This functions checks one of
-the buffer pool instances.
-@return TRUE if ptr belongs to a buf_block_t struct */
-static
-ibool
-buf_pointer_is_block_field_instance(
-/*================================*/
-	buf_pool_t*	buf_pool,	/*!< in: buffer pool instance */
-	const void*	ptr)		/*!< in: pointer not dereferenced */
+ibool buf_pointer_is_block_field_instance(
+	const buf_pool_t* buf_pool, const void* ptr)
 {
 	const buf_chunk_t*		chunk	= buf_pool->chunks;
 	const buf_chunk_t* const	echunk	= chunk + ut_min(
@@ -3938,49 +3916,6 @@ buf_pointer_is_block_field_instance(
 	}
 
 	return(FALSE);
-}
-
-/********************************************************************//**
-Find out if a pointer belongs to a buf_block_t. It can be a pointer to
-the buf_block_t itself or a member of it
-@return TRUE if ptr belongs to a buf_block_t struct */
-ibool
-buf_pointer_is_block_field(
-/*=======================*/
-	const void*	ptr)	/*!< in: pointer not dereferenced */
-{
-	ulint	i;
-
-	for (i = 0; i < srv_buf_pool_instances; i++) {
-		ibool	found;
-
-		found = buf_pointer_is_block_field_instance(
-			buf_pool_from_array(i), ptr);
-		if (found) {
-			return(TRUE);
-		}
-	}
-
-	return(FALSE);
-}
-
-/********************************************************************//**
-Find out if a buffer block was created by buf_chunk_init().
-@return TRUE if "block" has been added to buf_pool->free by buf_chunk_init() */
-static
-ibool
-buf_block_is_uncompressed(
-/*======================*/
-	buf_pool_t*		buf_pool,	/*!< in: buffer pool instance */
-	const buf_block_t*	block)		/*!< in: pointer to block,
-						not dereferenced */
-{
-	if ((((ulint) block) % sizeof *block) != 0) {
-		/* The pointer should be aligned. */
-		return(FALSE);
-	}
-
-	return(buf_pointer_is_block_field_instance(buf_pool, (void*) block));
 }
 
 #if defined UNIV_DEBUG || defined UNIV_IBUF_DEBUG
@@ -4124,9 +4059,14 @@ loop:
 
 		/* If the guess is a compressed page descriptor that
 		has been allocated by buf_page_alloc_descriptor(),
-		it may have been freed by buf_relocate(). */
+		it may have been freed by buf_relocate().
+		Also, the buffer pool could get resized and m_guess's chunk could
+		get freed, so we need to check the `block` pointer is still within one
+		of the chunks before dereferencing it to verify it still contains the
+		same m_page_id */
 
-		if (!buf_block_is_uncompressed(buf_pool, block)
+
+		if (!buf_pointer_is_block_field_instance(buf_pool, block)
 		    || !page_id.equals_to(block->page.id)
 		    || buf_block_get_state(block) != BUF_BLOCK_FILE_PAGE) {
 

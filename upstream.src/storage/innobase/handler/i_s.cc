@@ -1,6 +1,6 @@
 /*****************************************************************************
 
-Copyright (c) 2007, 2020, Oracle and/or its affiliates. All Rights Reserved.
+Copyright (c) 2007, 2021, Oracle and/or its affiliates.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License, version 2.0,
@@ -2618,7 +2618,7 @@ i_s_metrics_fill(
 			time_diff = 0;
 		}
 
-		/* Unless MONITOR__NO_AVERAGE is marked, we will need
+		/* Unless MONITOR_NO_AVERAGE is marked, we will need
 		to calculate the average value. If this is a monitor set
 		owner marked by MONITOR_SET_OWNER, divide
 		the value by another counter (number of calls) designated
@@ -2649,6 +2649,7 @@ i_s_metrics_fill(
 					/ MONITOR_VALUE(
 					monitor_info->monitor_related_id),
 					FALSE));
+				fields[METRIC_AVG_VALUE_RESET]->set_notnull();
 			} else {
 				fields[METRIC_AVG_VALUE_RESET]->set_null();
 			}
@@ -3471,6 +3472,12 @@ i_s_fts_index_cache_fill(
 
 	ut_a(cache);
 
+	/* Check if cache is being synced.
+	Note: we wait till cache is being synced. */
+	while (cache->sync->in_progress) {
+		os_event_wait(cache->sync->event);
+	}
+
 	for (ulint i = 0; i < ib_vector_size(cache->indexes); i++) {
 		fts_index_cache_t*      index_cache;
 
@@ -3813,7 +3820,7 @@ i_s_fts_index_table_fill_one_index(
 	int			ret = 0;
 
 	DBUG_ENTER("i_s_fts_index_table_fill_one_index");
-	DBUG_ASSERT(!dict_index_is_online_ddl(index));
+	assert(!dict_index_is_online_ddl(index));
 
 	heap = mem_heap_create(1024);
 
@@ -4112,7 +4119,7 @@ i_s_fts_config_fill(
 	if (!ib_vector_is_empty(user_table->fts->indexes)) {
 		index = (dict_index_t*) ib_vector_getp_const(
 				user_table->fts->indexes, 0);
-		DBUG_ASSERT(!dict_index_is_online_ddl(index));
+		assert(!dict_index_is_online_ddl(index));
 	}
 
 	while (fts_config_key[i]) {

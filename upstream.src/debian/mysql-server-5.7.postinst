@@ -131,6 +131,21 @@ test_mysql_access() {
   mysql --no-defaults -u root --socket="$tmpdir/mysqld.sock" </dev/null >/dev/null 2>&1
 }
 
+# Check if in (super) read-only mode
+# Usage: test_mysql_is_readonly <tmpdir>
+# Params:
+# tmpdir - Location of mysqld.sock file
+test_mysql_is_readonly() {
+  local tmpdir=$1
+  local readonly=0
+  readonly=$(mysql --no-defaults -u root --socket="$tmpdir/mysqld.sock" --skip-column-names --batch --execute "SELECT @@global.read_only OR @@global.super_read_only;" </dev/null) || true
+  if [ "$readonly" = "0" ]; then
+    return 1;
+  else
+    return 0;
+  fi
+}
+
 this_version=5.7
 
 # This is necessary because mysql_install_db removes the pid file in /var/run
@@ -316,15 +331,20 @@ if [ "$1" = "configure" ]; then
     if [ $result -ne 0 ]; then
       echo "Warning: Unable to start the server. Please restart MySQL and run mysql_upgrade to ensure the database is ready for use." >&2
     else
-      # mysql_upgrade returns exit status 2 if the database is already upgraded
-      # (LP: #1566406) so ignore its exit status if it is 2.
-      result=0
-      mysql_upgrade --no-defaults --socket="$tmpdir/mysqld.sock" || result=$?
-      if [ $result -ne 0 -a $result -ne 2 ]; then
-        echo "mysql_upgrade failed with exit status $result" >&2
-        stop_server "$tmpdir"
-        rm -rf "$tmpdir"
-        exit 1
+      # only run mysql_upgrade if NOT in read-only (LP: #1889472)
+      if ! test_mysql_is_readonly "$tmpdir"; then
+        # mysql_upgrade returns exit status 2 if the database is already upgraded
+        # (LP: #1566406) so ignore its exit status if it is 2.
+        result=0
+        mysql_upgrade --no-defaults --socket="$tmpdir/mysqld.sock" || result=$?
+        if [ $result -ne 0 -a $result -ne 2 ]; then
+          echo "mysql_upgrade failed with exit status $result" >&2
+          stop_server "$tmpdir"
+          rm -rf "$tmpdir"
+          exit 1
+        fi
+      else
+	  echo "mysql_upgrade skipped due to (super) read-only mode"
       fi
       # Stop the server
       stop_server "$tmpdir"
