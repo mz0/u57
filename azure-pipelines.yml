@@ -4,8 +4,7 @@
 trigger:
 - main
 
-pool:
-  vmImage: ubuntu-20.04
+pool: default
 
 steps:
 - script: ./getSource
