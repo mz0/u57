@@ -1,4 +1,4 @@
-mysql-5.7 (5.7.35-1) focal; urgency=medium
+mysql-5.7 (5.7.35-2) focal; urgency=medium
 
   * Non-maintainer upload.
   * disable a FAIL test (see github.com/mz0/mysql-5.7-ubuntu/issues/1)

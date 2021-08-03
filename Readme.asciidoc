@@ -1,19 +1,48 @@
-MySQL 5.7 builds for Ubuntu 20.04
+= MySQL 5.7 builds for Ubuntu 20.04
 
 
-2021-08-01 `~/m57/` hosts previous work in the `m57/mysql-5.7/` subdir, where `ubuntu/bionic-updates` branch
-was set on commit 1fd57e12575 2020-04-29 Author: marc.deslauriers@ubuntu.com
+//// 120 char stop -------------------------------------------------------------------------------------------------->|
+== 2021-08-01 Initial setup
+=== previous work re-use
+`~/m57/` hosts previous work in the `m57/mysql-5.7/` subdir, where
+`ubuntu/bionic-updates` branch was set on commit 1fd57e12575
+....
+2020-04-29 Author: marc.deslauriers@ubuntu.com
 5.7.30-0ubuntu0.18.04.1 (patches unapplied)
+....
+=== repository initialization
+----
+mkdir u57 && cd u57 && git init # + user.name, user.email, GPG
 
-mkdir u57 && cd u57 && git init # + user, email, GPG
+git remote add -t ubuntu/bionic-updates -m ubuntu/bionic-updates \
+  -f --no-tags m57 ../m57/mysql-5.7/.git
 
-git remote add -t ubuntu/bionic-updates -m ubuntu/bionic-updates -f --no-tags m57 ../m57/mysql-5.7/.git
 Updating m57
 ...
 Receiving objects: 100% (52654/52654), 81.49 MiB | 20.78 MiB/s, done.
-
+----
 git subtree add --prefix=upstream.src m57 ubuntu/bionic-updates
 
-git subtree pull  -P upstream.src m57 ubuntu/bionic-updates
+git subtree pull -P upstream.src m57 ubuntu/bionic-updates
 
-git remote add -f --no-tags upstream git://git.launchpad.net/ubuntu/+source/mysql-5.7
+----
+git remote add -t ubuntu/bionic-updates -t ubuntu/bionic-security -m ubuntu/bionic-updates \
+  -f --no-tags upstream git://git.launchpad.net/ubuntu/+source/mysql-5.7
+----
+____
+Updating upstream
+remote: Enumerating objects: 498, done.
+remote: Counting objects: 100% (498/498), done.
+remote: Compressing objects: 100% (58/58), done.
+remote: Total 277 (delta 224), reused 271 (delta 218)
+Receiving objects: 100% (277/277), 219.94 KiB | 172.00 KiB/s, done.
+Resolving deltas: 100% (224/224), completed with 190 local objects.
+From git://git.launchpad.net/ubuntu/+source/mysql-5.7
+ * [new branch]          ubuntu/bionic-updates  -> upstream/ubuntu/bionic-updates
+ * [new branch]          ubuntu/bionic-security -> upstream/ubuntu/bionic-security
+____
+### updating from upstream
+----
+git subtree pull -P upstream.src upstream ubuntu/bionic-updates
+<fix debian/changelog conflict> && git commit
+----

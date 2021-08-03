@@ -1,0 +1,15 @@
+https://github.com/MicrosoftDocs/azure-devops-docs/blob/master/docs/pipelines/agents/hosted.md
+
+Size 	Standard_DS2_v2
+vCPU 	2
+Memory: 7 GiB
+Temp storage (SSD) 14 GiB (10 GB available)
+Max cached and temp storage throughput: 8000 IOPS/ 64 MBps (cache size 86 GiB)
+Max uncached disk throughput: 6400 IOPS/ 96 MBps
+Expected network bandwidth: 1500 Mbps
+
+DSv2-series sizes run on either one of processors
+* Intel Xeon Platinum 8272CL (Cascade Lake, Q2'19 14nm 26c52t 2.7-4.0 GHz, 35.75 MB cache)
+* Intel Xeon 8171M 2.1GHz (Skylake, Q3'17 14nm 26c52t 2.1-3.7 GHz, 35.75 MB L3 Cache) 
+* Intel Xeon E5-2673 v4 2.3 GHz (Broadwell, Q2'17 14nm 20c40t 2.3-3.5 GHz, 50 MB L3 Cache) 
+* Intel Xeon E5-2673 v3 2.4 GHz (Haswell, Q3'14  12c24t 2.4-3.2 GHz, 30 MB L3 Cache)
