@@ -46,3 +46,11 @@ ____
 git subtree pull -P upstream.src upstream ubuntu/bionic-updates
 <fix debian/changelog conflict> && git commit
 ----
+
+### make a patch
+manually, comparing with `quilt` results: see archive/quilt.log
+
+### re-uploading failed build
+* bump version (5.7.35-1 -> 5.7.35-2)
+* rebuild (but do not re-upload orig.tar.gz) `debuild -S -sa -sd`
+* upload `dput ppa:marcuzero/compat mysql-5.7_5.7.35-2_source.changes`
