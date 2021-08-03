@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PVER=${1:-34}
+PVER=${1:-35}
 MAJ_MINOR=5.7
 FULLVER=$MAJ_MINOR.$PVER
 MIRROR=ftp.gwdg.de/pub/misc/mysql

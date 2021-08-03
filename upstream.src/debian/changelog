@@ -1,3 +1,11 @@
+mysql-5.7 (5.7.35-1) focal; urgency=medium
+
+  * Non-maintainer upload.
+  * disable a FAIL test (see github.com/mz0/mysql-5.7-ubuntu/issues/1)
+  * rebuild for focal
+
+ -- Mark Zhitomirski <mz@exactpro.com>  Sun, 03 Aug 2021 13:36:00 +0300
+
 mysql-5.7 (5.7.35-0ubuntu0.18.04.1) bionic-security; urgency=medium
 
   * SECURITY UPDATE: Update to 5.7.34 to fix security issues

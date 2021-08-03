@@ -1,0 +1,35 @@
+Description: Skip test failing when SECLEVEL=2
+ When SECLEVEL=1 this test PASSes (see Bug)
+ I see little reason to keeping this test for
+ a properly configured Ubuntu 20.04 system.
+Author: Mark Zhitomirski <mz@exactpro.com>
+Bug: https://github.com/mz0/mysql-5.7-ubuntu/issues/1
+Last-Update: 2021-08-03
+
+--- a/mysql-test/t/ssl_deprecated_tls_versions.test
++++ b/mysql-test/t/ssl_deprecated_tls_versions.test
+@@ -19,13 +19,4 @@
+ --let $assert_only_after = CURRENT_TEST: main.ssl_deprecated_tls_versions
+ --source include/assert_grep.inc
+ 
+---echo # Test for the connect warning
+---exec $MYSQL test --tls-version=tlsv1.1 --ssl_mode=required -e "select 1"
+---let $assert_select = Accepted a connection with deprecated protocol .TLSv1.1.
+---let $assert_file = $MYSQLTEST_VARDIR/log/mysqld.1.err
+---let $assert_count = 1
+---let $assert_text = An old tls version client triggers a warning
+---let $assert_only_after = CURRENT_TEST: main.ssl_deprecated_tls_versions
+---source include/assert_grep.inc
+-
+ --echo # End of 5.7 tests
+--- a/mysql-test/r/ssl_deprecated_tls_versions.result
++++ b/mysql-test/r/ssl_deprecated_tls_versions.result
+@@ -1,8 +1,4 @@
+ # Bug 32565996: backport of WL#14519: Deprecate the use of TLS v1.[01]
+ include/assert_grep.inc [Found a cmdline TLSv1 deprecation warning]
+ include/assert_grep.inc [Found a cmdline TLSv1.1 deprecation warning]
+-# Test for the connect warning
+-1
+-1
+-include/assert_grep.inc [An old tls version client triggers a warning]
+ # End of 5.7 tests
