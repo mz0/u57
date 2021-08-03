@@ -4,6 +4,11 @@
 /mysql-5.7_5.7.??.orig.tar.gz.asc
 /mysql-5.7_5.7.*_amd64.build
 /mysql-5.7_5.7.*_source.ppa.upload
+/mysql-5.7_5.7.*.debian.tar.xz
+/mysql-5.7_5.7.*.dsc
+/mysql-5.7_5.7.*.build
+/mysql-5.7_5.7.*.buildinfo
+/mysql-5.7_5.7.*.changes
 /upstream.src/debian/*.debhelper.log
 /upstream.src/.pc/
 /upstream.src/build-stamp
@@ -11,3 +16,4 @@
 /upstream.src/cmake/os/GNU.cmake
 /upstream.src/configure-stamp
 /upstream.src/debian/mysql-source-5.7.tar.gz
+/upstream.src/debian/files

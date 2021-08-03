@@ -1,0 +1,24 @@
+# install and configure `quilt`
+sudo apt install quilt  # 0.65-3
+cat > ~/.quiltrc << EoQ
+export QUILT_PATCHES=debian/patches
+QUILT_PUSH_ARGS="--color=auto"
+QUILT_DIFF_ARGS="--no-timestamps --no-index -p ab --color=auto"
+QUILT_REFRESH_ARGS="--no-timestamps --no-index -p ab"
+QUILT_DIFF_OPTS='-p'
+EoQ
+
+# in /tmp/try-quilt
+quilt new ssl_deprecated_tls_versions.patch
+quilt new ssl_deprecated_tls_versions.diff
+quilt add mysql-test/t/ssl_deprecated_tls_versions.test
+quilt add mysql-test/r/ssl_deprecated_tls_versions.result
+quilt diff
+quilt refresh
+quilt header --dep3 -e
+
+# in upstream.src/
+diff -u ../archive/ssl_deprecated_tls_versions.test mysql-test/t/ssl_deprecated_tls_versions.test \\
+  >> debian/patches/ssl_deprecated_tls_versions.patch
+diff -u ../archive/ssl_deprecated_tls_versions.result mysql-test/r/ssl_deprecated_tls_versions.result \\
+  >> debian/patches/ssl_deprecated_tls_versions.patch

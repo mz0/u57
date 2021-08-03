@@ -1,8 +1,8 @@
 = MySQL 5.7 builds for Ubuntu 20.04
 
 
-//// 120 char stop -------------------------------------------------------------------------------------------------->|
-== 2021-08-01 Initial setup
+//-- 120 char stop -------------------------------------------------------------------------------------------------->|
+===== 2021-08-01 Initial setup
 === previous work re-use
 `~/m57/` hosts previous work in the `m57/mysql-5.7/` subdir, where
 `ubuntu/bionic-updates` branch was set on commit 1fd57e12575
@@ -18,18 +18,20 @@ git remote add -t ubuntu/bionic-updates -m ubuntu/bionic-updates \
   -f --no-tags m57 ../m57/mysql-5.7/.git
 
 Updating m57
-...
+ . . .
 Receiving objects: 100% (52654/52654), 81.49 MiB | 20.78 MiB/s, done.
-----
+
 git subtree add --prefix=upstream.src m57 ubuntu/bionic-updates
 
 git subtree pull -P upstream.src m57 ubuntu/bionic-updates
 
-----
-git remote add -t ubuntu/bionic-updates -t ubuntu/bionic-security -m ubuntu/bionic-updates \
-  -f --no-tags upstream git://git.launchpad.net/ubuntu/+source/mysql-5.7
-----
-____
+git remote add \
+  -t ubuntu/bionic-updates \
+  -t ubuntu/bionic-security \
+  -m ubuntu/bionic-updates \
+  -f --no-tags \
+  upstream git://git.launchpad.net/ubuntu/+source/mysql-5.7
+
 Updating upstream
 remote: Enumerating objects: 498, done.
 remote: Counting objects: 100% (498/498), done.
@@ -40,9 +42,21 @@ Resolving deltas: 100% (224/224), completed with 190 local objects.
 From git://git.launchpad.net/ubuntu/+source/mysql-5.7
  * [new branch]          ubuntu/bionic-updates  -> upstream/ubuntu/bionic-updates
  * [new branch]          ubuntu/bionic-security -> upstream/ubuntu/bionic-security
-____
-### updating from upstream
+----
+
+=== updating from upstream
 ----
 git subtree pull -P upstream.src upstream ubuntu/bionic-updates
-<fix debian/changelog conflict> && git commit
+
+# fix debian/changelog conflict manually
+
+git add debian/changelog && git commit
 ----
+
+### make a patch
+manually, comparing with `quilt` results: see archive/quilt.log
+
+### re-uploading failed build
+* bump version (5.7.35-1 -> 5.7.35-2)
+* rebuild (but do not re-upload orig.tar.gz) `debuild -S -sa -sd`
+* upload `dput ppa:marcuzero/compat mysql-5.7_5.7.35-2_source.changes`
