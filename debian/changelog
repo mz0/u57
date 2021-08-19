@@ -1,3 +1,12 @@
+mysql-5.7 (5.7.35-0ubuntu0.18.04.2) bionic; urgency=medium
+
+  * d/systemd: Disable service timeout
+    For large databases, the service could timeout on stop, possibly
+    leading to data corruption during a system shutdown.
+    (LP: #1882527)
+
+ -- Paride Legovini <paride@ubuntu.com>  Thu, 19 Aug 2021 18:34:52 +0200
+
 mysql-5.7 (5.7.35-0ubuntu0.18.04.1) bionic-security; urgency=medium
 
   * SECURITY UPDATE: Update to 5.7.34 to fix security issues
