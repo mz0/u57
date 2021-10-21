@@ -1,3 +1,10 @@
+mysql-5.7 (5.7.36-0ubuntu0.18.04.1) bionic-security; urgency=medium
+
+  * SECURITY UPDATE: Update to 5.7.36 to fix security issues
+    - CVE-2021-35604, CVE-2021-35624
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Thu, 21 Oct 2021 11:12:47 -0400
+
 mysql-5.7 (5.7.35-0ubuntu0.18.04.2) bionic; urgency=medium
 
   * d/systemd: Disable service timeout
