@@ -1,0 +1,21 @@
+name: GitHub Actions build test
+on:
+  push:
+    branches: [main]
+jobs:
+  Build-binary-package:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install build tools and deps
+        run: |
+          sudo apt update && sudo apt upgrade && sudo apt install -y chrpath \
+          bison cmake debhelper devscripts dh-apparmor libaio-dev liblz4-dev \
+          libevent-dev libedit-dev libncurses5-dev libnuma-dev libssl-dev \
+          libwrap0-dev po-debconf zlib1g-dev dh-systemd pkg-config psmisc
+
+      - name: Download pristine MySQL 5.7.x sources
+        run: ./getSource
+
+      - name: Build  binary packages (but do not sign)
+        run: cd upstream.src && debuild -uc -us -b
