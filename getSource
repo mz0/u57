@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PVER=${1:-36}
+PVER=${1:-37}
 MAJ_MINOR=5.7
 FULLVER=$MAJ_MINOR.$PVER
 MIRROR=ftp.gwdg.de/pub/misc/mysql
@@ -17,7 +17,7 @@ TGTDIR=.
 DST_TARGZ=mysql-${MAJ_MINOR}_${FULLVER}.orig.tar.gz
 DST_ASC=$TGTDIR/${DST_TARGZ}.asc
 
-gpg --import archive/mysql-build-pubkey-8C718D3B5072E1F5.asc
+gpg --import archive/mysql-build-pubkey-3A79BD29.asc || exit 1
 
 CURL_PROGRESS_OPTION=--progress-bar # --no-progress-meter | --silent
 # beware of Mirror sites returning HTML "Service temporarily unavailable" or 404

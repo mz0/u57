@@ -1,3 +1,10 @@
+mysql-5.7 (5.7.37-1) focal; urgency=medium
+
+  * Non-maintainer upload.
+  * rebuild for focal
+
+ -- Mark Zhitomirski <mz@exactpro.com>  Tue, 08 Feb 2022 22:55:00 +0300
+
 mysql-5.7 (5.7.37-0ubuntu0.18.04.1) bionic-security; urgency=medium
 
   * SECURITY UPDATE: Update to 5.7.37 to fix security issues
