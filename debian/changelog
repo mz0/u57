@@ -1,3 +1,11 @@
+mysql-5.7 (5.7.38-0ubuntu0.18.04.1) bionic-security; urgency=medium
+
+  * SECURITY UPDATE: Update to 5.7.38 to fix security issues
+    - CVE-2022-21417, CVE-2022-21427, CVE-2022-21444, CVE-2022-21451,
+      CVE-2022-21454, CVE-2022-21460
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Tue, 26 Apr 2022 10:09:37 -0400
+
 mysql-5.7 (5.7.37-0ubuntu0.18.04.1) bionic-security; urgency=medium
 
   * SECURITY UPDATE: Update to 5.7.37 to fix security issues
