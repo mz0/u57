@@ -1,3 +1,11 @@
+mysql-5.7 (5.7.39-0ubuntu0.18.04.2) bionic-security; urgency=medium
+
+  * SECURITY UPDATE: Update to 5.7.39 to fix security issues
+    - d/p/disable_tests.patch: added new failing test with 5.7.39.
+    - CVE-2022-21515
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Tue, 26 Jul 2022 07:28:55 -0400
+
 mysql-5.7 (5.7.38-1) focal; urgency=medium
 
   * Non-maintainer upload.

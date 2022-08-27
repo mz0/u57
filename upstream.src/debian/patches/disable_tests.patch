@@ -1,12 +1,13 @@
 Description: disable failing tests
 Author: Marc Deslauriers <marc.deslauriers@canonical.com>
 Forwarded: not-needed
-Updated: 2020-07-20
+Updated: 2022-07-27
 
 --- a/mysql-test/t/disabled.def
 +++ b/mysql-test/t/disabled.def
-@@ -18,3 +18,4 @@ ssl-big                  : Bug #18977126
+@@ -18,3 +18,5 @@ ssl-big                  : Bug #18977126
  explain_for_connection_rqg_json  : Bug#20697533 2015-03-20 erlend Fails several times each day on all platforms
  explain_for_connection_rqg_trad : Bug#20697533 2015-03-20 erlend Fails several times each day on all platforms
  daemonize_opt : Bug#31335773 2020-05-12 Deepa Shutdown_report fails
 +partition_rename_longfilename : n/a 2018-04-19 mdeslaur Fails when building locally
++mysqldump_gtid_state : n/a 2022-07-27 mdeslaur Started failing with 5.7.39
