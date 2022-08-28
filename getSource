@@ -1,9 +1,10 @@
 #!/bin/sh
 
-PVER=${1:-38}
+PVER=${1:-39}
 MAJ_MINOR=5.7
 FULLVER=$MAJ_MINOR.$PVER
-MIRROR=ftp.gwdg.de/pub/misc/mysql
+MIRROR=o.x320.net/u57  # no longer available on public mirrors
+# ftp.gwdg.de/pub/misc/mysql
 # www.mirrorservice.org/sites/ftp.mysql.com
 # mirror.yandex.ru/mirrors/ftp.mysql.com
 # ftp.iij.ad.jp/pub/db/mysql           - 2021.07.31 5.7.29 was found here
