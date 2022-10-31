@@ -1,0 +1,40 @@
+= MySQL 5.7 builds for Ubuntu 20.04
+
+
+//-- 120 char stop -------------------------------------------------------------------------------------------------->|
+
+
+=== updating from upstream
+
+----
+git fetch upstream
+
+remote: Enumerating objects: 249, done.
+remote: Counting objects: 100% (249/249), done.
+remote: Compressing objects: 100% (18/18), done.
+remote: Total 129 (delta 113), reused 126 (delta 110)
+Receiving objects: 100% (129/129), 71.25 KiB | 1.87 MiB/s, done.
+Resolving deltas: 100% (113/113), completed with 100 local objects.
+From git://git.launchpad.net/ubuntu/+source/mysql-5.7
+   7e064a03d..89a60c1c1  ubuntu/bionic-updates  -> upstream/ubuntu/bionic-updates
+   7e064a03d..89a60c1c1  ubuntu/bionic-security -> upstream/ubuntu/bionic-security
+
+git subtree pull -P upstream.src upstream ubuntu/bionic-updates
+
+# upstream.src/debian/changelog - fix conflict manually
+
+git add upstream.src/debian/changelog && git commit
+----
+
+=== grab pristine sources and host them
+
+Manually go to https://dev.mysql.com/downloads/mysql/5.7.html?os=src
+and download
+ mysql-boost-5.7.40.tar.gz
+https://dev.mysql.com/downloads/file/?id=514045
+ mysql-boost-5.7.40.tar.gz.asc
+https://dev.mysql.com/downloads/gpg/?file=mysql-boost-5.7.40.tar.gz&p=23
+
+Make a mysql-boost-5.7.40.tar.gz.md5 and check it with your eyes against the published MD5
+
+Then upload those 3 files to the CI auxillary host (o.x320.net)
