@@ -1,3 +1,10 @@
+mysql-5.7 (5.7.41-0ubuntu0.18.04.1) bionic-security; urgency=medium
+
+  * SECURITY UPDATE: Update to 5.7.41 to fix security issues
+    - CVE-2023-21840
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Wed, 18 Jan 2023 07:33:46 -0500
+
 mysql-5.7 (5.7.40-0ubuntu0.18.04.1) bionic-security; urgency=medium
 
   * SECURITY UPDATE: Update to 5.7.40 to fix security issues (LP: #1992453)
