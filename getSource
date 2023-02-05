@@ -1,14 +1,9 @@
 #!/bin/sh
 
-PVER=${1:-40}
+PVER=${1:-41}
 MAJ_MINOR=5.7
 FULLVER=$MAJ_MINOR.$PVER
 MIRROR=o.x320.net/u57  # no longer available on public mirrors
-# ftp.gwdg.de/pub/misc/mysql
-# www.mirrorservice.org/sites/ftp.mysql.com
-# mirror.yandex.ru/mirrors/ftp.mysql.com
-# ftp.iij.ad.jp/pub/db/mysql           - 2021.07.31 5.7.29 was found here
-# ftp.zut.edu.pl/mirrors/ftp.mysql.com - here too, got 5.7.30 from it
 ORIGIN="http://$MIRROR/Downloads/MySQL-$MAJ_MINOR"
 TARGZ="mysql-boost-$FULLVER.tar.gz"
 GPG_SIGNATURE=${TARGZ}.asc

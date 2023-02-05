@@ -30,11 +30,14 @@ git add upstream.src/debian/changelog && git commit
 
 Manually go to https://dev.mysql.com/downloads/mysql/5.7.html?os=src
 and download
- mysql-boost-5.7.40.tar.gz
-https://dev.mysql.com/downloads/file/?id=514045
- mysql-boost-5.7.40.tar.gz.asc
-https://dev.mysql.com/downloads/gpg/?file=mysql-boost-5.7.40.tar.gz&p=23
+ mysql-boost-5.7.41.tar.gz
+https://dev.mysql.com/downloads/file/?id=515686
+ mysql-boost-5.7.41.tar.gz.asc
+https://dev.mysql.com/downloads/gpg/?file=mysql-boost-5.7.41.tar.gz&p=23
 
 Make a mysql-boost-5.7.40.tar.gz.md5 and check it with your eyes against the published MD5
 
 Then upload those 3 files to the CI auxillary host (o.x320.net)
+----
+scp -p mysql-boost-5.7.41.tar.gz.asc o.x320.net:/var/www/ROOT/u57/Downloads/MySQL-5.7/
+----
