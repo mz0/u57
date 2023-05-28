@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PVER=${1:-41}
+PVER=${1:-42}
 MAJ_MINOR=5.7
 FULLVER=$MAJ_MINOR.$PVER
 MIRROR=o.x320.net/u57  # no longer available on public mirrors
