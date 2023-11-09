@@ -1,0 +1,54 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Format: 1.8
+Date: Fri, 03 Feb 2023 11:33:00 +0400
+Source: mysql-5.7
+Architecture: source
+Version: 5.7.41-1
+Distribution: focal
+Urgency: medium
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Changed-By: Mark Zhitomirski <mz@exactpro.com>
+Changes:
+ mysql-5.7 (5.7.41-1) focal; urgency=medium
+ .
+   * Non-maintainer upload.
+   * rebuild for focal
+Checksums-Sha1:
+ 9231bcf91e21cc45be499274e76a8b726838b9d5 3664 mysql-5.7_5.7.41-1.dsc
+ 4b0240923afe315eee332124ae9eaec1ffc9c8d0 53266489 mysql-5.7_5.7.41.orig.tar.gz
+ 1e89bca1f62ecb425f60e7f24be63e55ba5980de 833 mysql-5.7_5.7.41.orig.tar.gz.asc
+ 4120ce6fd1d435a97b414301f9525d3acc428561 157592 mysql-5.7_5.7.41-1.debian.tar.xz
+ 3886bbd4791af86b6161de33d21aa26e2c644b17 9725 mysql-5.7_5.7.41-1_source.buildinfo
+Checksums-Sha256:
+ caf7124346cfc8e1faa5b8663cd4101f6ca24ba49f68cad8dd525efcd9afd310 3664 mysql-5.7_5.7.41-1.dsc
+ d5735e172fbd235d22d2c7eec084c51e7a1648d9e28c78b54e0c8b8d46751cb9 53266489 mysql-5.7_5.7.41.orig.tar.gz
+ e58dfc97ad59227b865de653b5e3b2b79cc55d06de9693e4ff93158b33ad8d14 833 mysql-5.7_5.7.41.orig.tar.gz.asc
+ bd30e9d5f19645d04f785b3fea3f5e70b31dec33605b586eac347a568d7281ad 157592 mysql-5.7_5.7.41-1.debian.tar.xz
+ 0854e1a4037b8813a85a404859c0ab353e5d42a9eded05adf44e73d2eb2d4ce7 9725 mysql-5.7_5.7.41-1_source.buildinfo
+Files:
+ eb8955554ac83bee6fef73d6155e2053 3664 database optional mysql-5.7_5.7.41-1.dsc
+ 2eb0d3bdb156b24d0952a259b33120ce 53266489 database optional mysql-5.7_5.7.41.orig.tar.gz
+ c2118ee271f42d9844db34b01cc45ed8 833 database optional mysql-5.7_5.7.41.orig.tar.gz.asc
+ c6c56e1f90fcc124663271ea3fbc9fa9 157592 database optional mysql-5.7_5.7.41-1.debian.tar.xz
+ 428a22118a211e3caf2ec976f2b437f0 9725 database optional mysql-5.7_5.7.41-1_source.buildinfo
+Original-Maintainer: Debian MySQL Maintainers <pkg-mysql-maint@lists.alioth.debian.org>
+
+-----BEGIN PGP SIGNATURE-----
+
+iQJEBAEBCgAuFiEEPhKaC4a4HC4jeq2SqPmD4PI6GxsFAmPgOy8QHG16QGV4YWN0
+cHJvLmNvbQAKCRCo+YPg8jobG8kmD/wMN9YLAVV/Ffufmq7droiKttYaqcrjw1Tv
+uII/Zp8DcRghXcntrxPWmONt9cVQR/y3cqUKXauoEfaXPtgPgEWiDNHsheesPsUF
+p9Xq4RY2yfhku1Md8sQHbUtyC0ssleN1abH8BnnX/GMOUy3QNwooXv6VwR6gBvqL
+Rsg5VQvxzHg69CR2ci3rJZ6waAeNDD1jDkf1D5HPeqU23LEjNmIKhKXubiq8oudt
+kNxroibx+j2+zWCcxKFLggPUJw4h8nzM6NMPYSlNIStnm6dj/uvP+OpIZoeXfZXf
+Qj8W7lzq4SSouWQNainc6aKSb/YfiLRoY05vI5eE+uHr53QaZvIMTE6wq0kNHeG7
+JOVOor45opYH5XwXWCXBobakjZ6WQgutG3wGCbCoaCoZMteSZR83PvVNkC0qgdxS
+usF2aDdVdsGdiyZOfTU5Pp6HrTJDdY4esY89q2Bc2AVk0KmlH3RxAhPC7LSBxfAW
+O6/ceOJLv5BKbIeqcqrUBwF3N+RcX17CXhhnxzwBK+UYaW0G4A9ULEQVMs8KkIvh
+smBOearI0m6ZYEUoit9i+WeKzQ1AnQG39Vx7RaHSNK6BjQ75K2uP2QGwis2se2LR
+a6Kgt4+ZrwgdiMQnIgsdC8HOPQXnmE5XDYmksUmtELBxcg0+1cn7LgxxMZ67fzzf
+syBpLsFz8g==
+=N+BS
+-----END PGP SIGNATURE-----
